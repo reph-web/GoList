@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css">
+    <title>Login</title>
+    <style>
+        body { 
+            background: url("/static/bg.png") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Fira Code', monospace;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        form {
+            background: rgba(0, 0, 0, 0.6); /* Fond semi-transparent */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        input {
+            display: block;
+            width: 200px;
+            padding: 10px;
+            margin: 20px auto;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        input[type="text"], input[type="password"] {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        button {
+            background: #1873a8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #5d8eaa;
+        }
+
+        h1{
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form action="/login"method="post">
+            <h1>Login</h1>
+            <input type="text" placeholder="Username" name="username" required>
+            <input type="password" placeholder="Password" name="password" required>
+            <button type="submit">Enter</button>
+        </form>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
