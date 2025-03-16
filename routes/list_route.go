@@ -8,14 +8,14 @@ import (
 
 func ListRoutes(app *fiber.App) {
 	// Get all lists
-	app.Get("/allLists", handlers.AllListsHandler)
+	app.Get("/lists", handlers.AllListsHandler)
 
 	// Get a specific list from id
 	app.Get("/list/:listId", handlers.ListHandler)
 
-	app.Post("/addList", handlers.AddListHandler)
+	app.Post("/list", handlers.AddListHandler)
 
-	app.Patch("/updateList/:listId", handlers.UpdateListHandler)
+	app.Patch("/list/:listId/name", handlers.UpdateListHandler)
 
 	app.Delete("/deleteList/:listId", handlers.DeleteListHandler)
 }

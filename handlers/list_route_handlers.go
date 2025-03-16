@@ -39,7 +39,7 @@ func getList(c *fiber.Ctx) (*models.List, error) {
 
 	// Find the list by its ID
 	var list models.List
-	if err := database.DB.Preload("Tasks").Where("id = ?", listID).First(&list).Error; err != nil {
+	if err := database.DB.First(&list, listID).Error; err != nil {
 		return nil, errors.New("list not found")
 	}
 
@@ -64,7 +64,6 @@ func AllListsHandler(c *fiber.Ctx) error {
 }
 
 func ListHandler(c *fiber.Ctx) error {
-
 	//Get the list from the URL
 	list, err := getList(c)
 	if err != nil {
@@ -196,4 +195,31 @@ func DeleteListHandler(c *fiber.Ctx) error {
 		})
 	}
 	return c.JSON(user.Lists)
+}
+
+func ListTasksHandler(c *fiber.Ctx) error {
+	//Get the list from the URL and handle error
+	list, err := getList(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	// Get user from username and handle error
+	user, err := getUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	// Find if the user is the owner of the list
+	if list.UserID != user.ID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "Forbidden access",
+		})
+	}
+
+	return c.JSON(list.Tasks)
 }

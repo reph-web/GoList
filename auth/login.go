@@ -99,6 +99,7 @@ func LoginUser(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		Secure:   true,
 		HTTPOnly: true,
+		SameSite: "Strict",
 	})
 
 	return c.JSON(fiber.Map{
