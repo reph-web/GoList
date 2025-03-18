@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+
+<div class="container">
+    <!-- Liste des listes -->
+    <div class="list-box">
+        <h2>📂 Mes listes</h2>
+        <ul id="listContainer"></ul>
+        <button id="addListBtn">➕ Nouvelle liste</button>
+    </div>
+
+    <!-- Liste des tâches -->
+    <div class="task-box">
+        <h2 id="listTitle">📝 Sélectionnez une liste</h2>
+        <ul id="taskContainer"></ul>
+        <button id="addTaskBtn" class="hidden">➕ Ajouter une tâche</button>
+        <button id="deleteListBtn" class="hidden delete-btn">🗑 Supprimer la liste</button>
+    </div>
+</div>
+
+<script src="static/render.js"></script>
+</body>
+</html>

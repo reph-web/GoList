@@ -7,15 +7,18 @@ import (
 )
 
 func ListRoutes(app *fiber.App) {
+
+	api := app.Group("/api")
+
 	// Get all lists
-	app.Get("/lists", handlers.AllListsHandler)
+	api.Get("/lists", handlers.AllListsHandler)
 
 	// Get a specific list from id
-	app.Get("/list/:listId", handlers.ListHandler)
+	api.Get("/list/:listId", handlers.ListHandler)
 
-	app.Post("/list", handlers.AddListHandler)
+	api.Post("/list", handlers.AddListHandler)
 
-	app.Patch("/list/:listId/name", handlers.UpdateListHandler)
+	api.Patch("/list/:listId/name", handlers.UpdateListHandler)
 
-	app.Delete("/deleteList/:listId", handlers.DeleteListHandler)
+	api.Delete("/deleteList/:listId", handlers.DeleteListHandler)
 }

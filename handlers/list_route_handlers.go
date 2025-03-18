@@ -39,7 +39,7 @@ func getList(c *fiber.Ctx) (*models.List, error) {
 
 	// Find the list by its ID
 	var list models.List
-	if err := database.DB.First(&list, listID).Error; err != nil {
+	if err := database.DB.Preload("Tasks").First(&list, listID).Error; err != nil {
 		return nil, errors.New("list not found")
 	}
 
