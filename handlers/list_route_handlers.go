@@ -46,6 +46,33 @@ func getList(c *fiber.Ctx) (*models.List, error) {
 	return &list, nil
 }
 
+func isOwner(c *fiber.Ctx) error {
+	//Get the list from the URL and handle error
+	list, err := getList(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	// Get user from username and handle error
+	user, err := getUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	// Find if the user is the owner of the list
+	if list.UserID != user.ID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "Forbidden access",
+		})
+	}
+
+	return nil
+}
+
 // Handler functions
 
 func AllListsHandler(c *fiber.Ctx) error {
@@ -117,26 +144,13 @@ func AddListHandler(c *fiber.Ctx) error {
 }
 
 func UpdateListHandler(c *fiber.Ctx) error {
-	//Get the list from the URL and handle error
+	isOwner(c)
+
+	// Get actual list from DB
 	list, err := getList(c)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
-		})
-	}
-
-	// Get user from username and handle error
-	user, err := getUser(c)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	// Find if the user is the owner of the list
-	if list.UserID != user.ID {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"error": "Forbidden access",
 		})
 	}
 
@@ -158,29 +172,15 @@ func UpdateListHandler(c *fiber.Ctx) error {
 }
 
 func DeleteListHandler(c *fiber.Ctx) error {
-	//Get the list from the URL and handle error
+	isOwner(c)
+
+	//Get the list from the URL
 	list, err := getList(c)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-
-	// Get user from username and handle error
-	user, err := getUser(c)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	// Find if the user is the owner of the list
-	if list.UserID != user.ID {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"error": "Forbidden access",
-		})
-	}
-
 	// Start to delete all tasks from the list
 	if err := database.DB.Where("list_id = ?", list.ID).Delete(&models.Task{}).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -194,7 +194,7 @@ func DeleteListHandler(c *fiber.Ctx) error {
 			"error": "Failed to delete list",
 		})
 	}
-	return c.JSON(user.Lists)
+	return AllListsHandler(c)
 }
 
 func ListTasksHandler(c *fiber.Ctx) error {
@@ -206,20 +206,8 @@ func ListTasksHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get user from username and handle error
-	user, err := getUser(c)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	// Find if the user is the owner of the list
-	if list.UserID != user.ID {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"error": "Forbidden access",
-		})
-	}
+	// Check if the user is the owner of the list
+	isOwner(c)
 
 	return c.JSON(list.Tasks)
 }
