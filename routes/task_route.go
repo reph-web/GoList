@@ -7,20 +7,20 @@ import (
 )
 
 func TaskRoutes(app *fiber.App) {
-
+	api := app.Group("/api")
 	// Get all tasks of a specific list from id
-	app.Get("/list/:listId/tasks", handlers.ListTasksHandler)
+	api.Get("/list/:listId/tasks", handlers.ListTasksHandler)
 
 	// Get a specific task from id
-	app.Get("/task/:taskId", handlers.TaskHandler)
+	api.Get("/task/:taskId", handlers.TaskHandler)
 
 	// Add task routes
-	app.Post("/list/:listId/task", handlers.AddTaskHandler)
+	api.Post("/list/:listId/task", handlers.AddTaskHandler)
 
 	// Update task routes
-	app.Patch("/task/:taskId/description", handlers.UpdateDescriptionTaskHandler)
-	app.Patch("/task/:taskId/check", handlers.UpdateCheckTaskHandler)
-	app.Patch("/task/:taskId/swapOrder", handlers.UpdateOrderTaskHandler)
+	api.Patch("/task/:taskId/description", handlers.UpdateDescriptionTaskHandler)
+	api.Patch("/task/:taskId/check", handlers.UpdateCheckTaskHandler)
+	api.Patch("/task/:taskId/swap", handlers.SwapOrderTaskHandler)
 
-	app.Delete("/deleteTask/:taskId", handlers.DeleteTaskHandler)
+	api.Delete("/task/:taskId", handlers.DeleteTaskHandler)
 }

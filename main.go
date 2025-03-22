@@ -14,10 +14,12 @@ func main() {
 	app.Static("/static", "./static")
 	database.ConnectDB()
 
-	routes.AuthRoutes(app)
+	// api routes
 	routes.ListRoutes(app)
 	routes.TaskRoutes(app)
 
+	// webpage routes
+	routes.AuthRoutes(app)
 	app.Get("/", func(c *fiber.Ctx) error {
 		//Check if the user is logged in in order to have acces to the webpage
 		_, err := auth.CheckJWT(c)
