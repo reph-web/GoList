@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     let lists = [];
     let selectedList = null;
 
-    // 🔹 Récupérer les listes depuis l'API au démarrage
     async function fetchLists() {
         try {
             const response = await fetch("/api/lists");
@@ -24,43 +23,62 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // 🔹 Récupérer les tâches d'une liste
     async function fetchTasks(listId) {
         try {
-            const response = await fetch(`/list/${listId}/tasks`);
-            selectedList.tasks = await response.json();
-            renderTasks();
+            const response = await fetch(`/api/list/${listId}/tasks`);
+            selectedList.Tasks = await response.json();
+            renderTasks(selectedList.Tasks);
         } catch (error) {
             console.error("Erreur lors du chargement des tâches :", error);
         }
     }
-
-    // 🔹 Afficher la liste des listes
     function renderLists() {
         listContainer.innerHTML = "";
         lists.forEach((list, index) => {
             const li = document.createElement("li");
-            li.textContent = list.name;
+            li.textContent = list.Name;
             li.addEventListener("click", () => selectList(index));
             listContainer.appendChild(li);
         });
     }
 
-    // 🔹 Sélectionner une liste et charger ses tâches
-    async function selectList(index) {
-        selectedList = lists[index];
-        listTitle.textContent = `📌 ${selectedList.name}`;
-        addTaskBtn.classList.remove("hidden");
-        deleteListBtn.classList.remove("hidden");
-        await fetchTasks(selectedList.id);
+    
+    function renderTasks(selectedListTasks) {
+        taskContainer.innerHTML = "";
+        selectedListTasks.forEach((task) => {
+            const li = document.createElement("li");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = task.Checked;
+            checkbox.addEventListener("change", () => toggleTask(task.ID));
+            li.appendChild(checkbox);
+
+            const description = document.createElement("span");
+            description.textContent = task.Description;
+            li.appendChild(description);
+
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "❌";
+            deleteButton.addEventListener("click", () => deleteTask(task.ID));
+            li.appendChild(deleteButton);
+
+            taskContainer.appendChild(li);
+        });
     }
 
-    // 🔹 Ajouter une nouvelle liste
+    async function selectList(index) {
+        selectedList = lists[index];
+        listTitle.textContent = `📌 ${selectedList.Name}`;
+        addTaskBtn.classList.remove("hidden");
+        deleteListBtn.classList.remove("hidden");
+        await fetchTasks(selectedList.ID);
+    }
+
     async function addList() {
         const listName = prompt("Nom de la nouvelle liste :");
         if (!listName) return;
         try {
-            const response = await fetch("/api/lists", {
+            const response = await fetch("/api/list", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: listName }),
@@ -73,43 +91,36 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // 🔹 Ajouter une nouvelle tâche
     async function addTask() {
         const taskName = prompt("Nouvelle tâche :");
         if (!taskName || !selectedList) return;
         try {
-            const response = await fetch(`/list/${selectedList.id}/task`, {
+            const response = await fetch(`/api/list/${selectedList.ID}/task`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ description: taskName }),
             });
             const newTask = await response.json();
-            selectedList.tasks.push(newTask);
+            selectedList.Tasks.push(newTask);
             renderTasks();
         } catch (error) {
             console.error("Erreur lors de l'ajout de la tâche :", error);
         }
     }
 
-    // 🔹 Cocher/Décocher une tâche (avec mise à jour en BDD)
-    async function toggleTask(taskId, checked) {
+    async function toggleTask(taskId) {
         try {
-            await fetch(`/task/${taskId}/check`, { method: "PATCH" });
-            selectedList.tasks = selectedList.tasks.map(task => 
-                task.id === taskId ? { ...task, checked: !checked } : task
-            );
-            renderTasks();
+            await fetch(`api/task/${taskId}/check`, { method: "PATCH" });
         } catch (error) {
             console.error("Erreur lors de la mise à jour de la tâche :", error);
         }
     }
 
-    // 🔹 Supprimer une liste
     async function deleteList() {
         if (!selectedList || !confirm("Supprimer cette liste ?")) return;
         try {
-            await fetch(`/api/list/${selectedList.id}`, { method: "DELETE" });
-            lists = lists.filter(list => list.id !== selectedList.id);
+            await fetch(`/api/list/${selectedList.ID}`, { method: "DELETE" });
+            lists = lists.filter(list => list.ID !== selectedList.ID);
             selectedList = lists.length > 0 ? lists[0] : null;
             renderLists();
             renderTasks();
@@ -118,45 +129,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // 🔹 Drag & Drop pour réorganiser les tâches (avec envoi en BDD)
-    function setupDragAndDrop() {
-        let draggedItem = null;
-
-        taskContainer.addEventListener("dragstart", (e) => {
-            draggedItem = e.target;
-            e.dataTransfer.setData("text/plain", draggedItem.dataset.id);
-        });
-
-        taskContainer.addEventListener("dragover", (e) => {
-            e.preventDefault();
-        });
-
-        taskContainer.addEventListener("drop", async (e) => {
-            e.preventDefault();
-            const droppedOn = e.target.closest(".task-item");
-            if (!draggedItem || !droppedOn || draggedItem === droppedOn) return;
-
-            const draggedTaskId = draggedItem.dataset.id;
-            const droppedOnTaskId = droppedOn.dataset.id;
-
-            // Échanger les tâches dans la BDD
-            try {
-                await fetch(`/task/${draggedTaskId}/swapOrder`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ taskToSwapId: droppedOnTaskId }),
-                });
-                await fetchTasks(selectedList.id); // Recharger les tâches après l'échange
-            } catch (error) {
-                console.error("Erreur lors du réarrangement des tâches :", error);
-            }
-        });
-    }
-
     document.getElementById("addListBtn").addEventListener("click", addList);
     addTaskBtn.addEventListener("click", addTask);
     deleteListBtn.addEventListener("click", deleteList);
 
-    await fetchLists(); // Charge les listes au démarrage
-    setupDragAndDrop(); // Active le drag & drop
+    await fetchLists();
 });

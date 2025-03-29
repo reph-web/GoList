@@ -20,13 +20,13 @@ func main() {
 
 	// webpage routes
 	routes.AuthRoutes(app)
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("*", func(c *fiber.Ctx) error {
 		//Check if the user is logged in in order to have acces to the webpage
 		_, err := auth.CheckJWT(c)
 		if err != nil {
-			return c.Status(401).JSON(fiber.Map{"error": err.Error()})
+			return c.SendFile("static/views/login.html")
 		}
-		return c.SendFile("static/index.html")
+		return c.SendFile("static/views/index.html")
 	})
 
 	port := ":9000"
